@@ -5,6 +5,8 @@ from algokit_utils.beta.algorand_client import (
     AssetOptInParams,
     AssetTransferParams,
     PayParams,
+    AssetFreezeParams,
+
 
 )
 
@@ -39,7 +41,10 @@ sent_txn = algorand.send.asset_create(
         sender=creator.address,
         total= 1000,
         asset_name="PAK-COIN",
-        unit_name="PKC"
+        unit_name="PKC",
+        manager=creator.address,
+        clawback=creator.address,
+        freeze=creator.address
         
     )
 )
@@ -122,3 +127,65 @@ print(algorand.account.get_information(receiver_acct.address)['assets'][0]['amou
 print(algorand.account.get_information(creator.address)['amount'])
 
 
+#Challenges Ideas
+
+#Freeze
+
+algorand.send.asset_freeze(
+    AssetFreezeParams(
+        sender=creator.address,
+        asset_id=asset_id,
+        account=receiver_acct.address,
+        frozen= True
+    )
+)
+
+# Test freeze error
+""" algorand.send.asset_transfer(
+    AssetTransferParams(
+            sender=receiver_acct.address,
+            receiver=creator.address,
+            asset_id=asset_id,
+            amount=2
+        )
+)
+ """
+
+#UnFreeze
+
+algorand.send.asset_freeze(
+    AssetFreezeParams(
+        sender=creator.address,
+        asset_id=asset_id,
+        account=receiver_acct.address,
+        frozen= False
+    )
+)
+
+# send asset
+
+algorand.send.asset_transfer(
+    AssetTransferParams(
+            sender=receiver_acct.address,
+            receiver=creator.address,
+            asset_id=asset_id,
+            amount=2
+        )
+)
+
+
+print(algorand.account.get_information(receiver_acct.address)['assets'][0]['amount'])
+
+#Clawback
+
+algorand.send.asset_transfer(
+    AssetTransferParams(
+            sender= creator.address,
+            receiver= creator.address,
+            asset_id=asset_id,
+            amount=2,
+            clawback_target= receiver_acct.address
+        )
+)
+
+print(algorand.account.get_information(receiver_acct.address)['assets'][0]['amount'])
